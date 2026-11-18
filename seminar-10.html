@@ -1293,6 +1293,8 @@ GN.ntRow = function (x, y, s, o, t) {
     if (mk[i] === 'ins') r += G('frameshift', `<rect x="${f(X(i))}" y="${f(y - sz * .85)}" width="${f(cw)}" height="${f(sz * 1.95)}" fill="#fff" fill-opacity="0"/>` + lt + GN.line(X(i) + 1, y + sz * .95, X(i) + cw - 1, y + sz * .95, C.bad, 1.6));
     else r += lt;
   }
+  /* v1.3: o.num — номера кодонов от старт-кодона над рамками (подписи «кодон 3», «в позиции 3») */
+  if (o.num) o.tr.cod.forEach((c, k) => { r += text(X(c.i) + 1.5 * cw, y - sz * .85 - 4, String(k + 1), { size: 10, col: C.muted }); });
   if (n < s.length) r += text(X(n) + 2, y, '…', { a: 'l', size: sz, col: '#9AA3AE' });
   (o.mark || []).filter(m => m.k === 'del').forEach(m => {
     const xd = X(m.i) - (m.i % 3 === 0 && m.i > 0 ? gp / 2 : 0) - .5;
@@ -1347,7 +1349,7 @@ GN.s1b = (function () {
   }
   function draw(o, t, hide) {
     let s = panel(16, 14, 568, 150, t('s1_pA'));
-    const rn = GN.ntRow(118, 66, CDS + UTR3, { tr: K.translate(CDS + UTR3, 0), max: 32, cell: 12, g: 'mrna' }, t);
+    const rn = GN.ntRow(118, 66, CDS + UTR3, { tr: K.translate(CDS + UTR3, 0), max: 32, cell: 12, g: 'mrna', num: 1 }, t);
     s += text(28, 66, t('s1_lbl_norm'), { a: 'l', size: 11.5, w: 700, col: C.muted }) + rn.svg;
     const altS = o.seq.slice(ST), altT = K.translate(altS, 0);
     const ra = GN.ntRow(118, 130, altS, { tr: altT, mark: hide ? [] : o.mark, max: 32, cell: 12, g: 'mrna' }, t);
@@ -1881,7 +1883,7 @@ GN.a4 = (function () {
     const W = 470 / 100, x0 = 96;
     const bar = (y, parts, lab) => {
       let xx = x0, r = text(28, y + 9, lab, { a: 'l', size: 10.5, w: 700, col: C.muted });
-      parts.forEach(([v, col, g]) => { if (v > 0) r += G(g, `<rect x="${f(xx)}" y="${f(y)}" width="${f(v * W)}" height="18" fill="${col}" stroke="#fff"/>`) + (v * W > 22 ? text(xx + v * W / 2, y + 9.5, String(v), { size: 10, w: 700, col: '#fff' }) : ''); xx += v * W; });
+      parts.forEach(([v, col, g]) => { if (v > 0) r += G(g, `<rect x="${f(xx)}" y="${f(y)}" width="${f(v * W)}" height="18" fill="${col}" stroke="#fff"/>`) + (v * W > 22 ? text(xx + v * W / 2, y + 9.5, String(v), { size: 10, w: 700, col: col === '#C9D1DB' ? '#15202B' : '#fff' }) : ''); xx += v * W; });
       return r;
     };
     if (mode === 'mask') s += text(300, 120, t('a4_lbl_hidden'), { size: 12, it: true, col: C.muted });
@@ -1970,7 +1972,7 @@ GN.trPart = function (tr, k) { k = Math.max(0, Math.min(tr.cod.length, k)); retu
     if (T >= 4 - 1e-4) return M.draw(o, t);
     const ST = M.ST, CDS = M.CDS, UTR3 = M.UTR3;
     let s = panel(16, 14, 568, 150, t('s1_pA'));
-    const rn = GN.ntRow(118, 66, CDS + UTR3, { tr: K.translate(CDS + UTR3, 0), max: 32, cell: 12, g: 'mrna' }, t);
+    const rn = GN.ntRow(118, 66, CDS + UTR3, { tr: K.translate(CDS + UTR3, 0), max: 32, cell: 12, g: 'mrna', num: 1 }, t);
     s += text(28, 66, t('s1_lbl_norm'), { a: 'l', size: 11.5, w: 700, col: C.muted }) + rn.svg;
     const altS = o.seq.slice(ST), altT = K.translate(altS, 0), a = at(o, T), part = GN.trPart(altT, a.read);
     /* рибосома под буквами: сначала её рисунок, затем строка мРНК */
