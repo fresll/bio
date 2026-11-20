@@ -997,7 +997,9 @@ const GN = (function () {
     s += panel(8, 300, 236, 110, t('s11_d1a_pB'));
     ['s11_ind_0', 's11_ind_1', 's11_ind_2'].forEach((k, i) => { const on = i === o.ind, x = 20 + i * 74;
       s += `<rect x="${x}" y="336" width="68" height="34" rx="7" fill="${on ? '#FFF3C4' : '#fff'}" stroke="${on ? '#B08900' : C.line}" stroke-width="${on ? 2.2 : 1.1}"/>` + text(x + 34, 353, t(k), { size: 12.5, w: on ? 700 : 500, col: on ? '#6B5300' : C.muted }); });
-    s += G('inducer', text(126, 392, t('s11_d1a_ind_note'), { size: 10.5, col: C.muted }));
+    /* сведение пакета 4 (20.11.2026): длинная подпись выходила за рамку панели Б — переносится на две строки */
+    const nt = t('s11_d1a_ind_note'), sp = nt.length > 28 ? nt.lastIndexOf(' ', Math.ceil(nt.length / 2) + 6) : -1;
+    s += G('inducer', sp > 0 ? text(126, 386, nt.slice(0, sp), { size: 10.5, col: C.muted }) + text(126, 399, nt.slice(sp + 1), { size: 10.5, col: C.muted }) : text(126, 392, nt, { size: 10.5, col: C.muted }));
     /* В: интенсивность, логарифмическая шкала 0,1–100 */
     s += panel(252, 300, 340, 110, t('s11_d1a_pC'));
     const x0 = 272, x1 = 572, Xl = v => x0 + (Math.log10(v) + 1) / 3 * (x1 - x0), yb = 346;
