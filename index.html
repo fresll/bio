@@ -23,6 +23,9 @@ h1{color:var(--u-ui-2)}
 .btn{background:var(--u-ui);border-color:var(--u-ui);color:var(--u-on-ui)}
 .btn.ghost{background:transparent;color:var(--u-ui)}
 .foot{border-top:2px solid var(--u-red)}
+
+.page-views { display: inline-flex; align-items: center; gap: .35em; white-space: nowrap; vertical-align: middle; font-variant-numeric: tabular-nums; }
+.page-views svg { flex: none; }
 </style>
 <!--brand-univ:end-->
 </head>
@@ -70,10 +73,36 @@ h1{color:var(--u-ui-2)}
 </ol>
 <p class="note">Страницы адаптированы для телефона. Схемы построены на учебных моделях: они показывают механизм, а не точные размеры и пропорции структур.</p>
 <p class="other">Продолжение тем — в курсе «Молекулярная биология» (5–6 семестры): <a href="https://edu.mazunin.science">edu.mazunin.science</a></p>
-<p class="foot">Версия 3.0 · Выпуск 1 семестра 2026–2027, 20 ноября 2026 г. · © 2026 Кафедра биологии и генетики, Медицинский университет Петровского. Учебные материалы курса «Биология», 1–2 семестры.</p>
+<p class="foot">Версия 3.0 · Выпуск 1 семестра 2026–2027, 20 ноября 2026 г. · © 2026 Кафедра биологии и генетики, Медицинский университет Петровского. Учебные материалы курса «Биология», 1–2 семестры.
+<span class="page-views" id="page-views" title="Посещения страницы">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+    <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"/>
+    <circle cx="12" cy="12" r="2.6"/>
+  </svg>
+  <span data-page-view-count aria-label="Статистика посещений пока недоступна">—</span>
+</span>
+</p>
 </div>
 <!--stats:start-->
 <script data-goatcounter="https://molbio.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<script>
+(() => {
+  const value = document.querySelector('[data-page-view-count]');
+  fetch('https://molbio.goatcounter.com/counter//bio/.json')
+    .then(response => {
+      if (!response.ok) throw new Error('Counter unavailable');
+      return response.json();
+    })
+    .then(({ count }) => {
+      if (typeof count !== 'string' || !count.trim()) return;
+      value.textContent = count;
+      value.setAttribute('aria-label', 'Посещения страницы: ' + count);
+    })
+    .catch(() => {
+      // Keep the unavailable state if the counter cannot be loaded.
+    });
+})();
+</script>
 <!--stats:end-->
 </body>
 </html>
