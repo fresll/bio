@@ -1,0 +1,66 @@
+name: Sync Biology to MAZUNIN EDU
+
+on:
+  push:
+    branches: [gh-pages]
+
+permissions: {}
+
+concurrency:
+  group: sync-biology-to-edu
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'fresll/bio'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.EDU_SYNC_TOKEN }}
+    steps:
+      - name: Update the Biology submodule on EDU
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "::notice::Configure the EDU_SYNC_TOKEN Actions secret to enable EDU publication."
+            exit 0
+          fi
+
+          target="repos/fresll/molbio"
+          for attempt in 1 2 3; do
+            source_sha=$(git ls-remote https://github.com/fresll/bio.git refs/heads/gh-pages | cut -f1)
+            [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]]
+            parent_sha=$(gh api "$target/git/ref/heads/main" --jq .object.sha)
+            base_tree=$(gh api "$target/git/commits/$parent_sha" --jq .tree.sha)
+            published_sha=$(gh api "$target/git/trees/$base_tree" \
+              --jq '.tree[] | select(.path == "bio" and .mode == "160000") | .sha')
+            if [[ -z "$published_sha" ]]; then
+              echo "::error::The EDU Biology submodule is missing."
+              exit 1
+            fi
+            if [[ "$published_sha" == "$source_sha" ]]; then
+              echo "EDU already uses the latest Biology version."
+              exit 0
+            fi
+
+            tree_sha=$(jq -n --arg base "$base_tree" --arg bio "$source_sha" \
+              '{base_tree: $base, tree: [{path: "bio", mode: "160000", type: "commit", sha: $bio}]}' | \
+              gh api --method POST "$target/git/trees" --input - --jq .sha)
+            commit_sha=$(jq -n --arg parent "$parent_sha" --arg tree "$tree_sha" \
+              '{message: "Sync Biology course", tree: $tree, parents: [$parent]}' | \
+              gh api --method POST "$target/git/commits" --input - --jq .sha)
+            if gh api --method PATCH "$target/git/refs/heads/main" \
+              -f sha="$commit_sha" -F force=false --silent; then
+              echo "Updated EDU Biology to $source_sha."
+              exit 0
+            fi
+            current_sha=$(gh api "$target/git/ref/heads/main" --jq .object.sha)
+            if [[ "$current_sha" == "$parent_sha" ]]; then
+              echo "::error::The token could not write to the EDU publication branch."
+              exit 1
+            fi
+            echo "The EDU branch changed during sync. Attempt $attempt of 3."
+          done
+
+          echo "::error::The EDU branch kept changing during sync."
+          exit 1
