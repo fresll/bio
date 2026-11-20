@@ -119,6 +119,12 @@ a.ext{font-weight:650;text-decoration-thickness:1px;text-underline-offset:3px}a.
 @media print{.reading details.more>summary{list-style:none}.reading details.more>*{display:block}}
 /* семинар 11: строка «Базовая подготовка» в продвинутых шагах и дополнениях (04) */
 .base-prep{margin:6px 0 10px;padding:6px 10px;border-left:3px solid var(--line,#D3DAE3);font-size:.95em}
+
+/* пакет 5 (20.11.2026): телефон — подписи < 7 px скрыты до увеличения; ширина увеличенной схемы — по самой мелкой подписи (≥ 11 px) */
+@media (max-width:760px){
+  .widget #widget-drawing:not(.zoomed) svg text.p5-small{visibility:hidden}
+  .widget #widget-drawing.zoomed > svg{min-width:var(--p5w,720px)!important;width:var(--p5w,720px)!important;max-width:none}
+}
 </style><!--brand-univ:start-->
 <style id="brand-univ">
 :root{--u-blue:#0090D0;--u-red:#E62E29;--u-ui:#006CA3;--u-ui-2:#00507A;--u-soft:#E2F0F8}
@@ -496,7 +502,7 @@ function renderLesson(l) {
   const zb = $('widget-zoom');
   if (zb) zb.onclick = () => { const on = !$('widget-drawing').classList.contains('zoomed'); $('widget-drawing').classList.toggle('zoomed', on); zb.setAttribute('aria-pressed', String(on)); zb.textContent = on ? U.zoom_out : U.zoom_in; if (on) $('widget-drawing').setAttribute('aria-label', U.zoom_area); else $('widget-drawing').removeAttribute('aria-label'); $('widget-drawing').scrollLeft = 0; };
   /* схема на телефоне увеличена по умолчанию, если шаг просит (w.zoomNarrow): подписи читаются без ручного увеличения */
-  if (zb && l.widget && l.widget.zoomNarrow && window.matchMedia && matchMedia('(max-width:700px)').matches) zb.click();
+  if (zb && l.widget && false && l.widget.zoomNarrow && window.matchMedia && matchMedia('(max-width:700px)').matches) zb.click();
 }
 function initWidget(l) {
   const w = l.widget, fn = W[w.kind], s = state[l.id] || (state[l.id] = {});
@@ -553,6 +559,42 @@ let lastSmall = small(); window.addEventListener('resize', () => { if (lastSmall
 $('large-text').onclick = () => { const on = document.body.classList.toggle('large-text'); $('large-text').setAttribute('aria-pressed', String(on)); };
 $('no-color').onclick = () => { const on = document.body.classList.toggle('no-color'); $('no-color').setAttribute('aria-pressed', String(on)); };
 
+/* пакет 5 финального аудита (20.11.2026): одно поведение схемы на телефоне (≤ 760 px) во всех «Объяснениях».
+   Схема открывается целиком; подписи, которые без увеличения мельче 7 px, скрыты, пока схема не увеличена;
+   «Увеличить схему» растягивает её так, чтобы самая мелкая подпись была не меньше 11 px (не уже 720 px, не шире 1800 px). */
+(function () {
+  const MQ = window.matchMedia ? window.matchMedia('(max-width:760px)') : null;
+  let busy = false, queued = false;
+  function fitPhone() {
+    queued = false;
+    const d = document.getElementById('widget-drawing'); if (!d) return;
+    const sv = d.querySelector('svg'); if (!sv) return;
+    const ts = sv.querySelectorAll('text');
+    if (!(MQ && MQ.matches)) { ts.forEach(t => t.classList.remove('p5-small')); d.style.removeProperty('--p5w'); return; }
+    busy = true;
+    try {
+      const cur = sv.getBoundingClientRect().width, flatW = d.clientWidth;
+      if (!cur || !flatW) return;
+      const k = flatW / cur; let min = Infinity;
+      ts.forEach(t => {
+        const m = t.getScreenCTM(); if (!m || (t.textContent || '').trim().length < 3) { t.classList.remove('p5-small'); return; }   /* подпись — от 3 знаков; одиночные символы значков (P, +, −, 2+) — часть рисунка */
+        const px = parseFloat(getComputedStyle(t).fontSize) * Math.hypot(m.a, m.b) * k;
+        if (px > 0 && px < min) min = px;
+        t.classList.toggle('p5-small', px < 7);
+      });
+      if (min < Infinity) d.style.setProperty('--p5w', Math.ceil(Math.min(1800, Math.max(720, flatW * 11.2 / min))) + 'px');
+    } finally { setTimeout(() => { busy = false; }, 0); }
+  }
+  const later = () => { if (busy || queued) return; queued = true; requestAnimationFrame(fitPhone); };
+  function arm() {
+    const main = document.getElementById('main') || document.body;
+    new MutationObserver(later).observe(main, { childList: true, subtree: true });
+    document.addEventListener('click', e => { if (e.target && e.target.id === 'widget-zoom') later(); }, true);
+    window.addEventListener('resize', later);
+    later();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
+})();
 /* =====================================================================
    s0_gn.js — общие детали схем семинара 9 «Транскрипция и процессинг пре-мРНК». Общие для практикума и «Объяснений».
    Условности: тёмно-синяя цепь ДНК — матричная цепь выбранной транскрипционной единицы; серо-синяя — кодирующая цепь;

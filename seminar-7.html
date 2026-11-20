@@ -493,6 +493,13 @@ input[type=range]{accent-color:var(--u-ui)}
 :root[data-theme="dark"] .amapq .opt.right{background:color-mix(in srgb,var(--good) 14%,var(--surface))}
 :root[data-theme="dark"] .amapq .opt.wrongpick{background:color-mix(in srgb,var(--bad) 12%,var(--surface))}
 </style>
+<style>
+/* пакет 5 (20.11.2026): телефон — подписи < 7 px скрыты до увеличения; ширина увеличенной схемы — по самой мелкой подписи (≥ 11 px) */
+@media (max-width:700px), (max-height:500px){
+  .stage:not(.zoomed) svg text.p5-small{visibility:hidden}
+  .stage.zoomed svg{width:var(--p5w,760px)!important}
+}
+</style>
 </head>
 <body>
 <noscript><style>.wrap{display:none}</style><div class="noscript">Откройте этот файл в браузере на компьютере или телефоне (Chrome, Edge, Firefox или Safari). В режиме предпросмотра схемы не работают.</div></noscript>
@@ -991,7 +998,7 @@ function revInit(){
     const zw = st.querySelector('.zwrap'); if (!zw || st.querySelector('.zhint')) return;
     const p = document.createElement('p'); p.className = 'zhint'; p.textContent = t('zoom_hint'); st.insertBefore(p, zw);
   });
-  if (window.matchMedia && matchMedia('(max-width:700px)').matches)
+  if (false && window.matchMedia && matchMedia('(max-width:700px)').matches)
     document.querySelectorAll('#scenes .zoombtn').forEach(b => { if (b.getAttribute('aria-pressed') !== 'true'){ b.click();
       const zw = b.closest('.stage').querySelector('.zwrap');   /* увеличенная схема по умолчанию открывается с левого верхнего угла */
       requestAnimationFrame(() => requestAnimationFrame(() => { zw.scrollLeft = 0; zw.scrollTop = 0; })); } });
@@ -3179,5 +3186,38 @@ initNav(); fromHash(); show(); revInit();
 <!--stats:start-->
 <script data-goatcounter="https://molbio.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <!--stats:end-->
+<script>
+/* пакет 5 финального аудита (20.11.2026): одно поведение схемы на телефоне (≤ 700 px или низкий экран) во всех практикумах.
+   Схема открывается целиком; подписи, которые без увеличения мельче 7 px, скрыты, пока схема не увеличена;
+   «Увеличить схему» растягивает её так, чтобы самая мелкая подпись была не меньше 11 px (не уже 760 px, не шире 1800 px). */
+(function () {
+  const MQ = window.matchMedia ? window.matchMedia('(max-width:700px), (max-height:500px)') : null;
+  let queued = false;
+  function fitStage(st) {
+    const sv = st.querySelector('svg'), zw = st.querySelector('.zwrap'); if (!sv || !zw) return;
+    const ts = sv.querySelectorAll('text');
+    if (!(MQ && MQ.matches)) { ts.forEach(t => t.classList.remove('p5-small')); st.style.removeProperty('--p5w'); return; }
+    const cur = sv.getBoundingClientRect().width, flatW = zw.clientWidth; if (!cur || !flatW) return;
+    const k = Math.min(1, flatW / cur); let min = Infinity;
+    ts.forEach(t => {
+      const m = t.getScreenCTM(); if (!m || (t.textContent || '').trim().length < 3) { t.classList.remove('p5-small'); return; }   /* подпись — от 3 знаков; одиночные символы значков (P, +, −, 2+) — часть рисунка */
+      const px = parseFloat(getComputedStyle(t).fontSize) * Math.hypot(m.a, m.b) * k;
+      if (px > 0 && px < min) min = px;
+      t.classList.toggle('p5-small', px < 7);
+    });
+    if (min < Infinity) st.style.setProperty('--p5w', Math.ceil(Math.min(1800, Math.max(760, flatW * 11.2 / min))) + 'px');
+  }
+  function fitAll() { queued = false; document.querySelectorAll('#scenes .stage').forEach(st => { if (st.offsetParent) fitStage(st); }); }
+  const later = () => { if (queued) return; queued = true; requestAnimationFrame(fitAll); };
+  function arm() {
+    const sc = document.getElementById('scenes') || document.body;
+    new MutationObserver(later).observe(sc, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+    document.addEventListener('click', later, true);
+    window.addEventListener('resize', later);
+    later();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
+})();
+</script>
 </body>
 </html>

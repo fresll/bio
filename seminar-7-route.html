@@ -222,6 +222,13 @@ button.primary:hover,button[aria-pressed=true]:hover{background:var(--u-ui-2)}
 :root:not([data-theme="light"]) .widget svg{background:#fff;border-color:#2E3A46}
 }
 </style>
+<style>
+/* пакет 5 (20.11.2026): телефон — подписи < 7 px скрыты до увеличения; ширина увеличенной схемы — по самой мелкой подписи (≥ 11 px) */
+@media (max-width:760px){
+  .widget #widget-drawing:not(.zoomed) svg text.p5-small{visibility:hidden}
+  .widget #widget-drawing.zoomed > svg{min-width:var(--p5w,720px)!important;width:var(--p5w,720px)!important;max-width:none}
+}
+</style>
 </head>
 <body><a class="skip" href="#main">К содержанию</a><header class="top"><div class="brand-lockup"><img class="brand-logo" src="data:image/png;base64,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" alt="Эмблема университета"><div class="brand"><strong>Медицинский университет им. Б. В. Петровского</strong>Кафедра биологии и генетики · Биология</div></div><div class="top-right"><a class="all-seminars" href="section-2.html">← Раздел II</a><a class="all-seminars" href="index.html">Все разделы</a><div class="version">Семинар 7 · v2.1.1</div></div></header>
 <div class="toolbar"><a id="seminar-back" class="seminar-back" href="seminar-7.html">← Вернуться к семинару</a><span class="title">Репликация ДНК: от комплементарности оснований к работе репликационной вилки</span><button id="menu" class="menu" aria-controls="nav" aria-expanded="false">Оглавление</button><button id="home-button">Маршрут</button><button id="practice-button">Практикум</button><button id="glossary-button">Словарь</button><button id="exam-button">Проверить себя</button><button id="all-button">Весь материал</button><button id="large-text" aria-pressed="false">Крупный текст</button><button id="no-color" aria-pressed="false">Без цвета</button><input id="search" class="search" type="search" aria-label="Найти тему в оглавлении" placeholder="Найти тему или белок"></div>
@@ -485,7 +492,7 @@ function renderLesson(l) {
   const zb = $('widget-zoom');
   if (zb) zb.onclick = () => { const on = !$('widget-drawing').classList.contains('zoomed'); $('widget-drawing').classList.toggle('zoomed', on); zb.setAttribute('aria-pressed', String(on)); zb.textContent = on ? U.zoom_out : U.zoom_in; if (on) $('widget-drawing').setAttribute('aria-label', U.zoom_area); else $('widget-drawing').removeAttribute('aria-label'); $('widget-drawing').scrollLeft = 0; };
   /* схема на телефоне увеличена по умолчанию, если шаг просит (w.zoomNarrow): подписи читаются без ручного увеличения */
-  if (zb && l.widget && l.widget.zoomNarrow && window.matchMedia && matchMedia('(max-width:700px)').matches) zb.click();
+  if (zb && l.widget && false && l.widget.zoomNarrow && window.matchMedia && matchMedia('(max-width:700px)').matches) zb.click();
 }
 function initWidget(l) {
   const w = l.widget, fn = W[w.kind], s = state[l.id] || (state[l.id] = {});
@@ -1613,4 +1620,42 @@ if (typeof practiceRow === 'function') { const _prow = practiceRow;
 </script><!--stats:start-->
 <script data-goatcounter="https://molbio.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <!--stats:end-->
+<script>
+/* пакет 5 финального аудита (20.11.2026): одно поведение схемы на телефоне (≤ 760 px) во всех «Объяснениях».
+   Схема открывается целиком; подписи, которые без увеличения мельче 7 px, скрыты, пока схема не увеличена;
+   «Увеличить схему» растягивает её так, чтобы самая мелкая подпись была не меньше 11 px (не уже 720 px, не шире 1800 px). */
+(function () {
+  const MQ = window.matchMedia ? window.matchMedia('(max-width:760px)') : null;
+  let busy = false, queued = false;
+  function fitPhone() {
+    queued = false;
+    const d = document.getElementById('widget-drawing'); if (!d) return;
+    const sv = d.querySelector('svg'); if (!sv) return;
+    const ts = sv.querySelectorAll('text');
+    if (!(MQ && MQ.matches)) { ts.forEach(t => t.classList.remove('p5-small')); d.style.removeProperty('--p5w'); return; }
+    busy = true;
+    try {
+      const cur = sv.getBoundingClientRect().width, flatW = d.clientWidth;
+      if (!cur || !flatW) return;
+      const k = flatW / cur; let min = Infinity;
+      ts.forEach(t => {
+        const m = t.getScreenCTM(); if (!m || (t.textContent || '').trim().length < 3) { t.classList.remove('p5-small'); return; }   /* подпись — от 3 знаков; одиночные символы значков (P, +, −, 2+) — часть рисунка */
+        const px = parseFloat(getComputedStyle(t).fontSize) * Math.hypot(m.a, m.b) * k;
+        if (px > 0 && px < min) min = px;
+        t.classList.toggle('p5-small', px < 7);
+      });
+      if (min < Infinity) d.style.setProperty('--p5w', Math.ceil(Math.min(1800, Math.max(720, flatW * 11.2 / min))) + 'px');
+    } finally { setTimeout(() => { busy = false; }, 0); }
+  }
+  const later = () => { if (busy || queued) return; queued = true; requestAnimationFrame(fitPhone); };
+  function arm() {
+    const main = document.getElementById('main') || document.body;
+    new MutationObserver(later).observe(main, { childList: true, subtree: true });
+    document.addEventListener('click', e => { if (e.target && e.target.id === 'widget-zoom') later(); }, true);
+    window.addEventListener('resize', later);
+    later();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
+})();
+</script>
 </body></html>
