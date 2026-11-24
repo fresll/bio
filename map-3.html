@@ -276,7 +276,7 @@ i.olgi.orig-a{background:#2E7DD1}i.olgi.orig-b{background:#C0392B}i.olgi.orig-e{
     const ext = MAP.nodes.filter(n => n.base);   /* опорные понятия: все, введённые в семинарах 6–12 */
     $('#cols').style.gridTemplateColumns = narrow() ? '' : `repeat(${MAP.sems.length + (ext.length ? 1 : 0)},minmax(0,1fr))`;
     $('#cols').innerHTML = (ext.length ? `<div class="col col-ext"><div class="col-h"><div class="n">Опорные понятия</div><div class="t">Введены в семинарах 6–12; на картах <a href="map-1.html">коллоквиума 1</a> и <a href="map-2.html">коллоквиума 2</a></div></div><div class="nodes">` +
-      ext.map(n => `<button type="button" class="node xnode" data-id="${n.id}">${esc(n.term)}</button>`).join('') + `</div></div>` : '') + MAP.sems.map(s => `<div class="col" data-sem="${s.n}"><div class="col-h"><div class="n">Эволюция · семинар ${s.n - 12}</div>` +
+      ext.map(n => `<button type="button" class="node xnode" data-id="${n.id}">${esc(n.term)}</button>`).join('') + `</div></div>` : '') + MAP.sems.map(s => `<div class="col" data-sem="${s.n}"><div class="col-h"><div class="n">Семинар ${s.n}</div>` +
       `<div class="t"><a href="seminar-${s.n}-route.html">${esc(s.title)}</a></div></div><div class="nodes">` +
       MAP.nodes.filter(n => n.sem === s.n && !n.base).map(n => `<button type="button" class="node${n.adv ? ' adv' : ''}" data-id="${n.id}">${esc(n.term)}</button>`).join('') +
       `</div></div>`).join('');
@@ -288,7 +288,7 @@ i.olgi.orig-a{background:#2E7DD1}i.olgi.orig-b{background:#C0392B}i.olgi.orig-e{
     const BN = ['копия и вариант', 'особь и популяция', 'линия и вид', 'человек и медицина'];
     const grp = [4, 3, 2, 1].map(b => ({ h: BN[b - 1], ns: MAP.nodes.filter(n => n.band === b) }));
     $('#celllist').innerHTML = grp.map(g => `<div class="relgrp"><h4>${g.h}</h4>` + g.ns.map(n =>
-      `<button type="button" class="mini-ln" data-id="${n.id}"${n.adv ? ' data-adv="1"' : ''}><b>${n.k}</b> ${esc(n.term)} <i>· ${n.base ? 'семинар ' + n.sem : 'эволюция · семинар ' + (n.sem - 12)}</i></button>`).join('') + `</div>`).join('');
+      `<button type="button" class="mini-ln" data-id="${n.id}"${n.adv ? ' data-adv="1"' : ''}><b>${n.k}</b> ${esc(n.term)} <i>· ${n.base ? 'семинар ' + n.sem : 'семинар ' + n.sem}</i></button>`).join('') + `</div>`).join('');
     $$('#celllist .mini-ln').forEach(b => b.addEventListener('click', () => pickNode(b.dataset.id)));
   }
   /* ---------- выбор ---------- */
@@ -373,7 +373,7 @@ i.olgi.orig-a{background:#2E7DD1}i.olgi.orig-b{background:#C0392B}i.olgi.orig-e{
   function showQR() {
     const P = $('#pqr');
     if (st.q != null) { const q = MAP.questions.find(x => x.n === st.q), ns = MAP.nodes.filter(n => n.q.includes(st.q) && visN(n));
-      P.innerHTML = `<h2>Вопрос программы · эволюция · семинар ${q.sem - 12}</h2><p><b>${esc(q.text)}</b></p><p class="q">Понятия вопроса (${ns.length}):</p>` + ns.map(n => `<button type="button" class="mini-ln" data-n="${n.id}">${esc(n.term)} <i>· ${n.base ? 'семинар ' + n.sem : 'эволюция · семинар ' + (n.sem - 12)}, «${esc(n.stepTitle)}»</i></button>`).join(''); }
+      P.innerHTML = `<h2>Вопрос программы · семинар ${q.sem}</h2><p><b>${esc(q.text)}</b></p><p class="q">Понятия вопроса (${ns.length}):</p>` + ns.map(n => `<button type="button" class="mini-ln" data-n="${n.id}">${esc(n.term)} <i>· ${n.base ? 'семинар ' + n.sem : 'семинар ' + n.sem}, «${esc(n.stepTitle)}»</i></button>`).join(''); }
     else if (st.route != null) { const r = MAP.routes[st.route];
       P.innerHTML = `<h2>Сквозной маршрут · семинары ${esc(r.sems)}</h2><p><b>${esc(r.title)}</b></p><ol style="padding-left:20px;margin:6px 0">` + r.edges.filter(id => visE(E[id])).map(id => { const e = E[id];
         return `<li><button type="button" class="mini-ln" data-e="${id}">${eLabel(e)}</button><span class="q">${esc(e.quotes[0].text)}</span></li>`; }).join('') + `</ol>`; }
@@ -406,7 +406,7 @@ i.olgi.orig-a{background:#2E7DD1}i.olgi.orig-b{background:#C0392B}i.olgi.orig-e{
       const tgt = rnd(Object.keys(into)), e = rnd(into[tgt]), bad = new Set(MAP.edges.filter(x => x.t === tgt || x.s === tgt).flatMap(x => [x.s, x.t]));
       const distr = shuffle(MAP.nodes.filter(n => !n.adv && !bad.has(n.id))).slice(0, 2), opts = shuffle([N[e.s], ...distr]);
       T.innerHTML = `<p><b>Найдите звено.</b> Наблюдение: «${esc(N[tgt].term)}» не работает как обычно, хотя само это звено не изменено. Какое звено карты могло выпасть?</p>` +
-        opts.map(n => `<button type="button" class="opt" data-ok="${n.id === e.s ? 1 : 0}">${esc(n.term)} <i class="q">(${n.base ? 'семинар ' + n.sem : 'эволюция · семинар ' + (n.sem - 12)})</i></button>`).join('') + `<div class="fb" id="fb"></div>`;
+        opts.map(n => `<button type="button" class="opt" data-ok="${n.id === e.s ? 1 : 0}">${esc(n.term)} <i class="q">(${n.base ? 'семинар ' + n.sem : 'семинар ' + n.sem})</i></button>`).join('') + `<div class="fb" id="fb"></div>`;
       T.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => { const ok = b.dataset.ok === '1'; b.classList.add(ok ? 'ok' : 'no');
         $('#fb').innerHTML = (ok ? 'Да. ' : 'Это звено не связано с «' + esc(N[tgt].term) + '» на карте. Подходит «' + esc(N[e.s].term) + '». ') + esc(e.remove); }));
     } else {
@@ -426,7 +426,7 @@ i.olgi.orig-a{background:#2E7DD1}i.olgi.orig-b{background:#C0392B}i.olgi.orig-e{
   function setRoute(r) { st.route = r === '' || r == null ? null : +r; st.q = null; st.sel = null; st.edge = null; $('#qsel').value = ''; render(); showNode(); showEdge(); showQR(); }
   /* ---------- запуск ---------- */
   buildCols(); buildCell(); buildAll();
-  $('#qsel').innerHTML = `<option value="">Вопрос программы: не выбран</option>` + MAP.sems.map(s => `<optgroup label="Эволюция · семинар ${s.n - 12}">` + MAP.questions.filter(q => q.sem === s.n).map(q => `<option value="${q.n}">${esc(q.text)}</option>`).join('') + `</optgroup>`).join('');
+  $('#qsel').innerHTML = `<option value="">Вопрос программы: не выбран</option>` + MAP.sems.map(s => `<optgroup label="Семинар ${s.n}">` + MAP.questions.filter(q => q.sem === s.n).map(q => `<option value="${q.n}">${esc(q.text)}</option>`).join('') + `</optgroup>`).join('');
   $('#stat').addEventListener('change', ev => { st.stat = ev.target.checked; document.body.classList.toggle('stl', st.stat); render(); });
   $('#rsel').innerHTML = `<option value="">Сквозной маршрут: не выбран</option>` + MAP.routes.map((r, i) => `<option value="${i}">${i + 1}. ${esc(r.title)}</option>`).join('');
   $('#qsel').addEventListener('change', ev => setQ(+ev.target.value || null));
