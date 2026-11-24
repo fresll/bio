@@ -1040,7 +1040,7 @@ const BF = (function () {
   return { setPick: v => { PICK = !!v; }, carrierKit: { ribo, vsvg, vsvgVes }, nucPart: { big: nucBig, imp: nucImp, exp: nucExp, sm: nucSm }, C, MEM, profile, recAt, recRadial, recOnPit, clathOnPit, vesicleRec, nucScene, sortScene, tfScene, glutScene, carrier, golgiPair, nsfRing, snarePair, dots, bilayerPts, line, circlePts, ellipsePts, compartment, coatRing, vesicle, receptor, dynamin, actin, snare };
 })();
 /* =====================================================================
-   s4_figs.js — детали схем семинара 4 «Путь секретируемого белка: от рибосомы до адреса» поверх общей библиотеки BF
+   s4_figs.js — детали схем семинара 4 «Биосинтез и внутриклеточная сортировка белков» поверх общей библиотеки BF
    (s0_figs.js образца семинара 3; BF не меняется) и реестр сцен GN (общий для практикума и «Объяснений», как в семинарах 7–10).
    Контракт сцены: GN.<имя> = { view(args, t) } → строка SVG в кадре 600 × 420; args — массив аргументов режима (07, 10);
    t(k, v) — подписи: в практикуме глобальная t() (таблица текстов), в «Объяснениях» — словарь S.L шага (widgets_body.js).
