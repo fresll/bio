@@ -68,7 +68,7 @@ html.rn-on .gl-item{scroll-margin-top:var(--gl-top,12px)}
 <script>
 (function(){
 var D={"base":"https://edu.mazunin.science/","gsuf":" «Молекулярная биология»","only":1,"steps":{},"art":{},"node":{}};
-var RX=/^(?:(s\d{1,2}-t\d{1,3}|bio-c\d{3})|r(\d{1,2})\.([A-Za-z0-9-]{1,64})|m([1-4])(?:\.(C\d{1,2}\.[A-Za-z0-9_-]{1,48}))?|k([1-4])(?:\.(S\d{2,3})(?:\.(\d{1,2}))?)?)$/;
+var RX=/^(?:(s\d{1,2}-t\d{1,3}|bio-c\d{3})|r(\d{1,2})\.([A-Za-z0-9-]{1,64})|m([1-4])(?:\.(C\d{1,2}\.[A-Za-z0-9_-]{1,48}))?|k([1-4])(?:\.(S\d{2,3})(?:\.(\d{1,2}))?)?|p(\d{1,2})\.q([1-4])(a?))$/;
 var P=(location.pathname.split('/').pop()||'');
 function dest(c){var m=RX.exec(c||'');if(!m)return null;
  if(m[1])return{h:D.base+'glossary.html#'+m[1],t:'← Вернуться в словарь курса'+D.gsuf};
@@ -78,6 +78,7 @@ function dest(c){var m=RX.exec(c||'');if(!m)return null;
   if(!Object.prototype.hasOwnProperty.call(st,id))return null;
   return{h:'seminar-'+m[2]+'-route.html#'+id,t:'← Вернуться к шагу '+m[2]+'·'+st[id]};}
  if(m[4])return{h:'map-'+m[4]+'.html'+(m[5]?'?concept='+m[5]:''),t:'← Вернуться к карте'};
+ if(m[9])return{h:'seminar-'+m[9]+'.html'+(m[11]?'?level=adv':'')+'#q'+m[10],t:'\u2190 \u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0432\u043e\u043f\u0440\u043e\u0441\u0443 '+m[9]+'.'+m[10]};
  if(m[6])return{h:'cell-'+m[6]+'.html'+(m[7]?'?v=1&scenario='+m[7]+'&mode=trace'+(m[8]?'&stage='+m[8]:''):''),t:'← Вернуться к клетке'};
  return null;}
 var ss={g:function(k){try{return sessionStorage.getItem(k)}catch(e){return null}},s:function(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},r:function(k){try{sessionStorage.removeItem(k)}catch(e){}}};
@@ -94,6 +95,7 @@ function here(a){
  if(P==='glossary.html'){var it=a.closest('.gl-item');return it&&RX.test(it.id)?it.id:null;}
  if(semN){if(lastStep)return'r'+semN+'.'+lastStep;var h=location.hash.slice(1);return/^glossary-S\d{1,2}-T\d{1,3}$/.test(h)?'r'+semN+'.'+h:null;}
  var mm=/^map-([1-4])\.html$/.exec(P);if(mm){var n=document.querySelector('.node[aria-pressed="true"]');var id=n&&n.getAttribute('data-id');return'm'+mm[1]+(id&&/^C\d{1,2}\.[A-Za-z0-9_-]{1,48}$/.test(id)?'.'+id:'');}
+ var pp=/^seminar-(\d{1,2})\.html$/.exec(P);if(pp){var qm=/^#q([1-4])$/.exec(location.hash),lv=/[?&]level=adv(&|$)/.test(location.search);return'p'+pp[1]+'.q'+(qm?qm[1]:'1')+(lv?'a':'');}
  var kk=/^cell-([1-4])\.html$/.exec(P);if(kk){var p=new URLSearchParams(location.search),sc=p.get('scenario'),sg=p.get('stage');
   return'k'+kk[1]+(sc&&/^S\d{2,3}$/.test(sc)?'.'+sc+(sg&&/^\d{1,2}$/.test(sg)?'.'+sg:''):'');}
  return null;}
@@ -103,7 +105,9 @@ if(!D.only)document.addEventListener('click',function(ev){
  var u;try{u=new URL(a.getAttribute('href'),location.href)}catch(e){return}
  var own=(u.protocol===location.protocol&&u.host===location.host&&!/\/bio\//.test(u.pathname))||(u.hostname==='fresll.github.io'&&/^\/molbio\//.test(u.pathname))||(u.hostname==='edu.mazunin.science'&&!/^\/bio\//.test(u.pathname));
  if(!own)return;var name=u.pathname.split('/').pop();
- if(!/^(seminar-\d{1,2}-route|glossary|map-[1-4]|cell-[1-4])\.html$/.test(name)||name===P)return;
+ if(!/^(seminar-\d{1,2}(-route)?|glossary|map-[1-4]|cell-[1-4])\.html$/.test(name)||name===P)return;
+ /* практикум → практикум (предыдущий / следующий семинар) — движение по курсу, полоса не нужна */
+ if(/^seminar-\d{1,2}\.html$/.test(name)&&/^seminar-\d{1,2}\.html$/.test(P))return;
  var sp=new URLSearchParams(u.search);
  if(!sp.has('from')){var c=here(a);if(!c)return;sp.set('from',c);}
  var s=sp.toString();a.setAttribute('href',name+(s?'?'+s:'')+u.hash);a.removeAttribute('target');},true);
