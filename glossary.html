@@ -47,6 +47,86 @@ h1{color:var(--u-ui-2)}
 .gl-hide{display:none}
 @media (max-width:600px){.gl-tools{position:static}.gl-item{padding:10px 11px}.gl-tools input[type=search]{max-width:none}}
 </style>
+<!--return-nav:start-->
+<style id="return-nav">
+.rn-bar{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483000;display:flex;align-items:center;gap:2px;max-width:calc(100% - 20px);box-sizing:border-box;margin:0;padding:3px 3px 3px 16px;border-radius:22px;background:var(--u-ui,#006CA3);color:var(--u-on-ui,#FFFFFF);box-shadow:0 4px 18px rgba(0,0,0,.28);font:600 15px/1.3 "Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.rn-bar a{color:inherit;text-decoration:none;padding:8px 6px 8px 0;min-width:0}
+.rn-bar a:hover{text-decoration:underline;text-underline-offset:3px}
+.rn-bar button{flex:none;width:34px;height:34px;margin:0;padding:0;border:0;border-radius:50%;background:transparent;color:inherit;font:400 22px/1 system-ui,sans-serif;cursor:pointer}
+.rn-bar button:hover{background:rgba(255,255,255,.18)}
+.rn-bar a:focus-visible,.rn-bar button:focus-visible{outline:3px solid var(--on-line,#B06E05);outline-offset:2px;border-radius:6px}
+html.rn-on body{padding-bottom:72px}
+html.rn-on .gl-item{scroll-margin-top:var(--gl-top,12px)}
+.rn-gl{margin:6px 0 0;font-size:.9em}
+.rn-gl a{font-weight:600}
+@media print{.rn-bar{display:none}}
+</style>
+<script>
+(function(){
+var D={"base":"https://edu.mazunin.science/","gsuf":" «Молекулярная биология»","only":1,"steps":{},"art":{},"node":{}};
+var RX=/^(?:(s\d{1,2}-t\d{1,3}|bio-c\d{3})|r(\d{1,2})\.([A-Za-z0-9-]{1,64})|m([1-4])(?:\.(C\d{1,2}\.[A-Za-z0-9_-]{1,48}))?|k([1-4])(?:\.(S\d{2,3})(?:\.(\d{1,2}))?)?)$/;
+var P=(location.pathname.split('/').pop()||'');
+function dest(c){var m=RX.exec(c||'');if(!m)return null;
+ if(m[1])return{h:D.base+'glossary.html#'+m[1],t:'← Вернуться в словарь курса'+D.gsuf};
+ if(D.only)return null;
+ if(m[2]){var st=D.steps[m[2]],id=m[3];if(!st)return null;
+  if(/^glossary-S\d{1,2}-T\d{1,3}$/.test(id))return{h:'seminar-'+m[2]+'-route.html#'+id,t:'← Вернуться к словарю семинара '+m[2]};
+  if(!Object.prototype.hasOwnProperty.call(st,id))return null;
+  return{h:'seminar-'+m[2]+'-route.html#'+id,t:'← Вернуться к шагу '+m[2]+'·'+st[id]};}
+ if(m[4])return{h:'map-'+m[4]+'.html'+(m[5]?'?concept='+m[5]:''),t:'← Вернуться к карте'};
+ if(m[6])return{h:'cell-'+m[6]+'.html'+(m[7]?'?v=1&scenario='+m[7]+'&mode=trace'+(m[8]?'&stage='+m[8]:''):''),t:'← Вернуться к клетке'};
+ return null;}
+var ss={g:function(k){try{return sessionStorage.getItem(k)}catch(e){return null}},s:function(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},r:function(k){try{sessionStorage.removeItem(k)}catch(e){}}};
+var KEY='rn:'+location.pathname,code=null,q=null;
+try{q=new URLSearchParams(location.search).get('from')}catch(e){}
+if(q!==null){if(dest(q)){code=q;ss.s(KEY,q)}}
+else{var nt='';try{nt=(performance.getEntriesByType('navigation')[0]||{}).type||''}catch(e){}
+ if(nt==='reload'||nt==='back_forward'){var v=ss.g(KEY);if(dest(v))code=v}else ss.r(KEY)}
+/* место на этой странице, куда вернуть студента */
+var semN=(/^seminar-(\d{1,2})-route\.html$/.exec(P)||[])[1],lastStep=null;
+function track(){var h=decodeURIComponent(location.hash.slice(1));if(semN&&D.steps[semN]&&Object.prototype.hasOwnProperty.call(D.steps[semN],h))lastStep=h;}
+if(semN){track();window.addEventListener('hashchange',track);}
+function here(a){
+ if(P==='glossary.html'){var it=a.closest('.gl-item');return it&&RX.test(it.id)?it.id:null;}
+ if(semN){if(lastStep)return'r'+semN+'.'+lastStep;var h=location.hash.slice(1);return/^glossary-S\d{1,2}-T\d{1,3}$/.test(h)?'r'+semN+'.'+h:null;}
+ var mm=/^map-([1-4])\.html$/.exec(P);if(mm){var n=document.querySelector('.node[aria-pressed="true"]');var id=n&&n.getAttribute('data-id');return'm'+mm[1]+(id&&/^C\d{1,2}\.[A-Za-z0-9_-]{1,48}$/.test(id)?'.'+id:'');}
+ var kk=/^cell-([1-4])\.html$/.exec(P);if(kk){var p=new URLSearchParams(location.search),sc=p.get('scenario'),sg=p.get('stage');
+  return'k'+kk[1]+(sc&&/^S\d{2,3}$/.test(sc)?'.'+sc+(sg&&/^\d{1,2}$/.test(sg)?'.'+sg:''):'');}
+ return null;}
+if(!D.only)document.addEventListener('click',function(ev){
+ if(ev.button||ev.metaKey||ev.ctrlKey||ev.shiftKey||ev.altKey)return;
+ var a=ev.target&&ev.target.closest?ev.target.closest('a[href]'):null;if(!a||a.closest('.rn-bar'))return;
+ var u;try{u=new URL(a.getAttribute('href'),location.href)}catch(e){return}
+ var own=(u.protocol===location.protocol&&u.host===location.host&&!/\/bio\//.test(u.pathname))||(u.hostname==='fresll.github.io'&&/^\/molbio\//.test(u.pathname))||(u.hostname==='edu.mazunin.science'&&!/^\/bio\//.test(u.pathname));
+ if(!own)return;var name=u.pathname.split('/').pop();
+ if(!/^(seminar-\d{1,2}-route|glossary|map-[1-4]|cell-[1-4])\.html$/.test(name)||name===P)return;
+ var sp=new URLSearchParams(u.search);
+ if(!sp.has('from')){var c=here(a);if(!c)return;sp.set('from',c);}
+ var s=sp.toString();a.setAttribute('href',name+(s?'?'+s:'')+u.hash);a.removeAttribute('target');},true);
+/* статья словаря семинара → статья словаря курса (только «Объяснения») */
+function glLinks(){var mn=document.getElementById('main');if(!semN||!mn||!D.art[semN])return;
+ [].forEach.call(mn.querySelectorAll('div[id^="g-S"]'),function(d){if(d.querySelector('.rn-gl'))return;var m=/^g-S(\d{1,2})-(T\d{1,3})$/.exec(d.id);if(!m||m[1]!==semN)return;
+  var an=D.art[semN][m[2]],dd=d.querySelector('dd');if(!an||!dd)return;var p=document.createElement('p');p.className='rn-gl';
+  var l=document.createElement('a');l.href='glossary.html#'+an;l.textContent='В словаре курса →';p.appendChild(l);dd.appendChild(p);});}
+/* ссылки «Словарь курса» в паспорте понятия карты и у понятий этапа клетки */
+window.rnGl=function(code,id,label){var an=D.node&&D.node[id];if(!an||D.only)return'';
+ return'<p class="rn-gl"><a class="rn-gl-link" href="glossary.html?from='+code+'#'+an+'">'+label+'</a></p>';};
+window.rnGlList=function(code,ids,lab){if(D.only||!ids)return'';var o=[];ids.forEach(function(id){var an=D.node&&D.node[id];if(an)o.push('<a class="rn-gl-link" href="glossary.html?from='+code+'#'+an+'">'+String((lab&&lab[id])||id).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})+'</a>');});
+ return o.length?'<p class="rn-gl">Словарь курса: '+o.join(', ')+'</p>':'';};
+function bar(){if(!code||document.getElementById('rn-bar'))return;var d=dest(code);if(!d)return;
+ var b=document.createElement('div');b.className='rn-bar';b.id='rn-bar';b.setAttribute('role','navigation');b.setAttribute('aria-label','Возврат');
+ var a=document.createElement('a');a.href=d.h;a.textContent=d.t;
+ var x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label','Убрать полосу возврата');x.title='Убрать';
+ x.onclick=function(){b.remove();document.documentElement.classList.remove('rn-on');ss.r(KEY);code=null;
+  try{var p=new URLSearchParams(location.search);if(p.has('from')){p.delete('from');var s=p.toString();history.replaceState(history.state,'',location.pathname+(s?'?'+s:'')+location.hash);}}catch(e){}};
+ b.appendChild(a);b.appendChild(x);document.body.appendChild(b);document.documentElement.classList.add('rn-on');
+ var tl=P==='glossary.html'&&document.querySelector('.gl-tools');if(tl&&getComputedStyle(tl).position==='sticky')document.documentElement.style.setProperty('--gl-top',(tl.offsetHeight+12)+'px');
+ if(P==='glossary.html'&&location.hash){var t=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(t&&t.scrollIntoView)setTimeout(function(){t.scrollIntoView()},0);}}
+function init(){bar();glLinks();var mn=document.getElementById('main');if(semN&&mn&&window.MutationObserver)new MutationObserver(glLinks).observe(mn,{childList:true});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!--return-nav:end-->
 </head>
 <body>
 <div class="wrap wide2">
